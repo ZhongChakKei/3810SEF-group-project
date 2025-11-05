@@ -15,6 +15,9 @@ app.set('trust proxy', 1);
 // View engine setup
 app.set('view engine', 'ejs');
 
+// Static files middleware
+app.use(express.static('public'));
+
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = process.env.DB_NAME || 'project_sample';
@@ -46,7 +49,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production'
   }
@@ -83,15 +86,15 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    // Redirect to stored URL or default to /find
-    const next = req.session.next || '/find';
+    // Redirect to stored URL or default to homepage
+    const next = req.session.next || '/';
     delete req.session.next;
     res.redirect(next);
   }
 );
 
 // Logout
-app.post('/logout', (req, res) => {
+app.get('/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
       console.error('Logout error:', err);
@@ -104,9 +107,33 @@ app.post('/logout', (req, res) => {
 // MVC WEB ROUTES (Protected)
 // ============================================================================
 
-// Home - redirect to find
-app.get('/', isLoggedIn, (req, res) => {
-  res.redirect('/find');
+// Home - Show homepage
+app.get('/', isLoggedIn, async (req, res) => {
+  try {
+    const playersCollection = db.collection('players');
+    const players = await playersCollection.find({}).toArray();
+    res.render('home', { user: req.user, players: players });
+  } catch (err) {
+    console.error('Error loading home:', err);
+    res.status(500).send('Error loading home page');
+  }
+});
+
+// Squad - Interactive pitch view
+app.get('/squad', isLoggedIn, (req, res) => {
+  handle_Find(req, res);
+});
+
+// Players - All players list
+app.get('/players', isLoggedIn, async (req, res) => {
+  try {
+    const playersCollection = db.collection('players');
+    const players = await playersCollection.find({}).toArray();
+    res.render('players', { user: req.user, players: players });
+  } catch (err) {
+    console.error('Error loading players:', err);
+    res.status(500).send('Error loading players page');
+  }
 });
 
 // CREATE - Show form
@@ -119,7 +146,7 @@ app.post('/create', isLoggedIn, (req, res) => {
   handle_Create(req, res);
 });
 
-// FIND - List all players
+// FIND - List all players (keep for backward compatibility)
 app.get('/find', isLoggedIn, (req, res) => {
   handle_Find(req, res);
 });

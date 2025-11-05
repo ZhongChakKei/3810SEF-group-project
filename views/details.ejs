@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Player Details - Liverpool FC</title>
+  <title>Player Details - Liverpool Fan Page - Group30</title>
   <style>
     * {
       margin: 0;
@@ -12,48 +12,152 @@
     }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f5f5;
-    }
-    .header {
-      background: #c8102e;
+      background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 50%, #c8102e 100%);
+      background-attachment: fixed;
       color: white;
-      padding: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      min-height: 100vh;
     }
-    .header-content {
-      max-width: 900px;
-      margin: 0 auto;
+    
+    /* Header */
+    .header {
+      background: #0f0f1a;
+      padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
-    .back-link {
-      color: white;
-      text-decoration: none;
-      display: inline-flex;
+    .logo-section {
+      display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 15px;
+      cursor: pointer;
     }
-    .back-link:hover {
-      text-decoration: underline;
+    .logo-section:hover {
+      opacity: 0.8;
     }
+    .logo {
+      width: 50px;
+      height: 50px;
+      background: transparent;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      flex: 1;
+      justify-content: center;
+    }
+    .nav-link {
+      color: #888;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: #00b2a9;
+    }
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #252535;
+      padding: 8px 15px;
+      border-radius: 25px;
+    }
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: #00b2a9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .logout-btn {
+      background: transparent;
+      border: 1px solid #c8102e;
+      color: #c8102e;
+      padding: 8px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .logout-btn:hover {
+      background: #c8102e;
+      color: white;
+    }
+    
     .container {
       max-width: 900px;
       margin: 30px auto;
       padding: 0 20px;
     }
     .player-header {
-      background: white;
-      border-radius: 8px;
+      background: #252535;
+      border-radius: 20px;
       padding: 30px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      border: 2px solid #333345;
       display: flex;
+      gap: 30px;
       justify-content: space-between;
       align-items: start;
     }
+    .player-photo-container {
+      flex-shrink: 0;
+      width: 200px;
+      height: 200px;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 3px solid #00b2a9;
+      background: linear-gradient(180deg, #1a1a2e 0%, #252535 100%);
+    }
+    .player-photo-large {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .no-photo-large {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      color: rgba(255,255,255,0.1);
+    }
+    .player-info {
+      flex: 1;
+    }
     .player-info h1 {
-      color: #c8102e;
+      color: white;
       font-size: 32px;
       margin-bottom: 10px;
     }
@@ -69,38 +173,58 @@
     }
     .meta-label {
       font-size: 12px;
-      color: #999;
+      color: #888;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .meta-value {
       font-size: 18px;
       font-weight: 600;
-      color: #333;
+      color: white;
       margin-top: 5px;
     }
     .position-badge {
       display: inline-block;
-      padding: 6px 12px;
-      border-radius: 5px;
+      padding: 8px 16px;
+      border-radius: 10px;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       margin-top: 5px;
     }
-    .pos-goalkeeper { background: #ffeb3b; color: #000; }
-    .pos-defender { background: #4caf50; color: white; }
-    .pos-midfielder { background: #2196f3; color: white; }
-    .pos-forward { background: #f44336; color: white; }
+    .pos-goalkeeper { 
+      background: rgba(243, 156, 18, 0.2);
+      color: #f39c12;
+      border: 1px solid #f39c12;
+    }
+    .pos-defender { 
+      background: rgba(52, 152, 219, 0.2);
+      color: #3498db;
+      border: 1px solid #3498db;
+    }
+    .pos-midfielder { 
+      background: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+      border: 1px solid #2ecc71;
+    }
+    .pos-forward { 
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    }
     .edit-btn {
       background: #00b2a9;
       color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
+      padding: 12px 24px;
+      border-radius: 10px;
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 600;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
     .edit-btn:hover {
       background: #009688;
+      transform: translateY(-2px);
     }
     .stats-grid {
       display: grid;
@@ -109,41 +233,48 @@
       margin-bottom: 20px;
     }
     .stat-card {
-      background: white;
-      border-radius: 8px;
+      background: #252535;
+      border-radius: 15px;
       padding: 25px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
       text-align: center;
+      border: 2px solid #333345;
+      transition: all 0.3s;
+    }
+    .stat-card:hover {
+      border-color: #00b2a9;
+      transform: translateY(-5px);
     }
     .stat-value {
       font-size: 36px;
       font-weight: bold;
-      color: #c8102e;
+      color: #00b2a9;
       margin-bottom: 5px;
     }
     .stat-label {
       font-size: 14px;
-      color: #666;
+      color: #888;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
     }
-    .info-card {
-      background: white;
-      border-radius: 8px;
-      padding: 25px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    .info-section {
+      background: #252535;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      border: 2px solid #333345;
     }
-    .info-card h2 {
-      color: #333;
+    .info-section h2 {
+      color: #00b2a9;
       font-size: 20px;
       margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #c8102e;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
     .info-row {
       display: flex;
       padding: 12px 0;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #333345;
     }
     .info-row:last-child {
       border-bottom: none;
@@ -151,10 +282,10 @@
     .info-label {
       flex: 0 0 180px;
       font-weight: 600;
-      color: #666;
+      color: #888;
     }
     .info-value {
-      color: #333;
+      color: white;
     }
     .tags {
       display: flex;
@@ -162,8 +293,9 @@
       flex-wrap: wrap;
     }
     .tag {
-      background: #e3f2fd;
-      color: #1976d2;
+      background: rgba(0,178,169,0.1);
+      color: #00b2a9;
+      border: 1px solid rgba(0,178,169,0.3);
       padding: 4px 12px;
       border-radius: 15px;
       font-size: 13px;
@@ -173,13 +305,31 @@
 <body>
   <div class="header">
     <div class="header-content">
-      <h1>⚽ Player Details</h1>
-      <a href="/find" class="back-link">← Back to List</a>
+      <div class="logo">
+        <img src="/image/logo.png" alt="Liverpool FC" />
+        <h1>Liverpool Fan Page - Group 30</h1>
+      </div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/squad">Line-up Prediction</a>
+        <a href="/players">Players</a>
+        <a href="/create">Add Player</a>
+      </nav>
+      <div class="user-badge">
+        <span><%= user ? user.displayName : 'Guest' %></span>
+        <a href="/logout" class="logout-btn">Logout</a>
+      </div>
     </div>
   </div>
 
   <div class="container">
     <div class="player-header">
+      <% if (player.squadNumber) { %>
+        <div class="player-photo-container">
+          <img src="/players/<%= player.squadNumber %>.png" alt="<%= player.name %>" class="player-photo-large" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="no-photo-large" style="display: none;">⚽</div>
+        </div>
+      <% } %>
       <div class="player-info">
         <h1><%= player.name %></h1>
         <div class="player-meta">
