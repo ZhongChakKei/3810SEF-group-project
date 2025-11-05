@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Player - Liverpool FC</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+    }
+    .header {
+      background: #c8102e;
+      color: white;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .header-content {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .back-link {
+      color: white;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #c8102e;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-weight: 500;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #c8102e;
+    }
+    .stats-section {
+      grid-column: 1 / -1;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .stats-section h3 {
+      color: #666;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    .error {
+      background: #ffebee;
+      color: #c62828;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary {
+      background: #c8102e;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #a00d26;
+    }
+    .btn-secondary {
+      background: #ddd;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <h1>⚽ Edit Player</h1>
+      <a href="/details?_id=<%= player._id %>" class="back-link">← Back to Details</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>Edit Player Information</h2>
+      
+      <% if (error) { %>
+        <div class="error"><%= error %></div>
+      <% } %>
+
+      <form action="/update?_id=<%= player._id %>" method="POST">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Name *</label>
+            <input type="text" id="name" name="name" value="<%= player.name %>" required>
+          </div>
+
+          <div class="form-group">
+            <label for="squadNumber">Squad Number</label>
+            <input type="number" id="squadNumber" name="squadNumber" value="<%= player.squadNumber || '' %>" min="1" max="99">
+          </div>
+
+          <div class="form-group">
+            <label for="position">Position</label>
+            <select id="position" name="position">
+              <option value="Goalkeeper" <%= player.position === 'Goalkeeper' ? 'selected' : '' %>>Goalkeeper</option>
+              <option value="Defender" <%= player.position === 'Defender' ? 'selected' : '' %>>Defender</option>
+              <option value="Midfielder" <%= player.position === 'Midfielder' ? 'selected' : '' %>>Midfielder</option>
+              <option value="Forward" <%= player.position === 'Forward' ? 'selected' : '' %>>Forward</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="nationality">Nationality</label>
+            <input type="text" id="nationality" name="nationality" value="<%= player.nationality || '' %>">
+          </div>
+
+          <div class="form-group">
+            <label for="heightCm">Height (cm)</label>
+            <input type="number" id="heightCm" name="heightCm" value="<%= player.heightCm || '' %>" min="150" max="220">
+          </div>
+
+          <div class="form-group">
+            <label for="dateOfBirth">Date of Birth</label>
+            <input type="date" id="dateOfBirth" name="dateOfBirth" 
+                   value="<%= player.dateOfBirth ? new Date(player.dateOfBirth).toISOString().split('T')[0] : '' %>">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="tags">Tags (comma-separated)</label>
+            <input type="text" id="tags" name="tags" value="<%= player.tags ? player.tags.join(', ') : '' %>">
+          </div>
+
+          <div class="stats-section">
+            <h3>Player Statistics</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="appearances">Appearances</label>
+                <input type="number" id="appearances" name="appearances" 
+                       value="<%= player.stats ? player.stats.appearances : 0 %>" min="0">
+              </div>
+
+              <div class="form-group">
+                <label for="goals">Goals</label>
+                <input type="number" id="goals" name="goals" 
+                       value="<%= player.stats ? player.stats.goals : 0 %>" min="0">
+              </div>
+
+              <div class="form-group">
+                <label for="assists">Assists</label>
+                <input type="number" id="assists" name="assists" 
+                       value="<%= player.stats ? player.stats.assists : 0 %>" min="0">
+              </div>
+
+              <div class="form-group">
+                <label for="minutes">Minutes Played</label>
+                <input type="number" id="minutes" name="minutes" 
+                       value="<%= player.stats ? player.stats.minutes : 0 %>" min="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <a href="/details?_id=<%= player._id %>" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
