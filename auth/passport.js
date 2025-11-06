@@ -41,7 +41,17 @@ function setupPassport(db) {
         }
       );
 
-      const user = result;
+      // Get the user document - handle both old and new MongoDB driver formats
+      let user = result.value || result;
+      
+      // If still null, fetch the user directly
+      if (!user || !user._id) {
+        user = await usersCollection.findOne({ providerId: googleId });
+      }
+      
+      if (!user) {
+        return done(new Error('Failed to create or find user'), null);
+      }
       
       // Return minimal user object
       return done(null, {

@@ -60,11 +60,16 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// JSON parsing middleware for API routes
+// JSON parsing middleware for API routes (must come before formidable)
 app.use('/api', express.json());
 
-// Form parsing middleware
-app.use(formidable());
+// Form parsing middleware for non-API routes only
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next(); // Skip formidable for API routes
+  }
+  formidable()(req, res, next);
+});
 
 // Make user available to all views
 app.use((req, res, next) => {
@@ -400,13 +405,25 @@ app.post('/api/lineups', isLoggedIn, async (req, res) => {
       return res.status(400).json({ error: 'Lineup must have exactly 11 players' });
     }
     
+    const lineupTitle = title || `Lineup ${new Date().toLocaleDateString()}`;
+    
+    // Check for duplicate title for this user
+    const existingLineup = await db.collection(COLLECTION_LINEUPS).findOne({
+      userEmail: req.user.email,
+      title: lineupTitle
+    });
+    
+    if (existingLineup) {
+      return res.status(400).json({ error: 'A lineup with this title already exists. Please choose a different name.' });
+    }
+    
     const lineup = {
       userId: req.user._id,
       userEmail: req.user.email,
       userName: req.user.displayName || req.user.email,
       formation,
       positions,
-      title: title || `Lineup ${new Date().toLocaleDateString()}`,
+      title: lineupTitle,
       createdAt: new Date()
     };
     

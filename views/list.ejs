@@ -232,14 +232,21 @@
     .history-item {
       padding: 15px;
       border-bottom: 1px solid #333345;
-      cursor: pointer;
       transition: all 0.3s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
     }
     .history-item:hover {
       background: #1a1a2e;
     }
     .history-item:last-child {
       border-bottom: none;
+    }
+    .history-item-content {
+      flex: 1;
+      cursor: pointer;
     }
     .history-item-title {
       font-weight: 600;
@@ -249,6 +256,21 @@
     .history-item-date {
       font-size: 12px;
       color: #888;
+    }
+    .history-item-delete {
+      background: transparent;
+      border: 1px solid #c8102e;
+      color: #c8102e;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .history-item-delete:hover {
+      background: #c8102e;
+      color: white;
     }
     .history-empty {
       padding: 20px;
@@ -1182,11 +1204,16 @@
       }
 
       historyMenu.innerHTML = lineups.map(lineup => `
-        <div class="history-item" onclick="loadLineup('${lineup._id}')">
-          <div class="history-item-title">${lineup.title}</div>
-          <div class="history-item-date">
-            ${new Date(lineup.createdAt).toLocaleString()} - ${lineup.formation}
+        <div class="history-item">
+          <div class="history-item-content" onclick="loadLineup('${lineup._id}')">
+            <div class="history-item-title">${lineup.title}</div>
+            <div class="history-item-date">
+              ${new Date(lineup.createdAt).toLocaleString()} - ${lineup.formation}
+            </div>
           </div>
+          <button class="history-item-delete" onclick="event.stopPropagation(); deleteLineup('${lineup._id}', '${lineup.title.replace(/'/g, "\\'")}')">
+            🗑️ Delete
+          </button>
         </div>
       `).join('');
     }
@@ -1234,6 +1261,30 @@
       } catch (err) {
         console.error('Load lineup error:', err);
         alert('Failed to load lineup. Please try again.');
+      }
+    }
+
+    // Delete a lineup
+    async function deleteLineup(lineupId, lineupTitle) {
+      if (!confirm(`Are you sure you want to delete "${lineupTitle}"?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/lineups/${lineupId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          alert('Lineup deleted successfully!');
+          loadHistory(); // Refresh the history list
+        } else {
+          const error = await response.json();
+          alert('Failed to delete lineup: ' + (error.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Delete lineup error:', err);
+        alert('Failed to delete lineup. Please try again.');
       }
     }
 
