@@ -202,18 +202,18 @@
       min-width: 600px;
       background: #252535;
       border-radius: 20px;
-      padding: 20px;
+      padding: 20px 20px 50px 20px; /* Extra padding at bottom for player names */
       box-shadow: 0 5px 20px rgba(0,0,0,0.3);
     }
     .pitch {
       width: 100%;
       max-width: 900px;
       height: 0;
-      padding-bottom: 75%; /* Wider pitch ratio (4:3) */
+      padding-bottom: 85%; /* Extended pitch ratio to give more space at bottom */
       background: linear-gradient(to bottom, #2ecc71 0%, #27ae60 50%, #2ecc71 100%);
       border-radius: 15px;
       position: relative;
-      overflow: hidden;
+      overflow: visible; /* Changed to visible so player names can extend beyond */
       border: 5px solid #fff;
       margin: 0 auto;
     }
@@ -275,7 +275,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      padding: 20px;
+      padding: 20px 20px 40px 20px; /* Extra padding at bottom for player names */
     }
     .position-slot {
       position: absolute;
@@ -379,7 +379,6 @@
       background: #252535;
       border-radius: 20px;
       padding: 20px;
-      margin-top: 20px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.3);
     }
     .bench-header {
@@ -387,6 +386,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
     .bench-title {
       font-size: 18px;
@@ -417,15 +418,17 @@
       border-color: #00b2a9;
     }
     .bench-grid {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      min-height: 150px;
-      padding: 15px;
+      display: grid;
+      grid-template-columns: repeat(2, 150px);
+      gap: 8px;
+      min-height: 400px;
+      padding: 10px;
       background: #1a1a2e;
       border-radius: 15px;
-      max-height: 400px;
+      max-height: 600px;
       overflow-y: auto;
+      justify-content: center;
+      align-content: start;
     }
     .bench-player {
       position: relative;
@@ -434,6 +437,7 @@
       align-items: center;
       cursor: grab;
       transition: all 0.3s;
+      flex-shrink: 0;
     }
     .bench-player:active {
       cursor: grabbing;
@@ -444,11 +448,14 @@
     .player-card {
       background: #252535;
       border-radius: 15px;
-      padding: 15px;
-      width: 140px;
+      padding: 8px;
+      width: 150px;
+      max-width: 150px;
+      min-width: 150px;
       text-align: center;
       border: 2px solid #333345;
       transition: all 0.3s;
+      box-sizing: border-box;
     }
     .player-card:hover {
       border-color: #00b2a9;
@@ -456,9 +463,9 @@
       box-shadow: 0 5px 15px rgba(0,178,169,0.3);
     }
     .player-card .player-photo-mini {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 10px;
+      width: 65px;
+      height: 65px;
+      margin: 0 auto 6px;
       border-radius: 50%;
       overflow: hidden;
       border: 3px solid #00b2a9;
@@ -482,25 +489,25 @@
     }
     .player-card .player-info .name {
       font-weight: 600;
-      font-size: 14px;
-      margin-bottom: 5px;
+      font-size: 12px;
+      margin-bottom: 3px;
     }
     .player-card .player-info .position {
-      font-size: 11px;
+      font-size: 10px;
       color: #00b2a9;
       font-weight: 600;
       background: rgba(0,178,169,0.1);
-      padding: 3px 8px;
-      border-radius: 10px;
+      padding: 2px 6px;
+      border-radius: 8px;
       display: inline-block;
     }
     .player-card .stats {
       display: flex;
       justify-content: space-around;
-      margin-top: 10px;
-      padding-top: 10px;
+      margin-top: 6px;
+      padding-top: 6px;
       border-top: 1px solid #333345;
-      font-size: 11px;
+      font-size: 9px;
     }
     .player-card .stat {
       display: flex;
@@ -582,13 +589,16 @@
     /* Responsive */
     @media (max-width: 1200px) {
       .info-panel {
-        width: 100%;
+        width: 100% !important;
       }
       .main-content {
         flex-direction: column;
       }
       .nav-menu {
         gap: 15px;
+      }
+      .bench-grid {
+        justify-content: center;
       }
     }
     @media (max-width: 768px) {
@@ -670,52 +680,52 @@
         </div>
       </div>
 
-      <!-- Info Panel -->
-      <div class="info-panel">
-        <div class="info-header">Squad Overview</div>
-        <div class="formation-info">
-          <div class="info-row">
-            <span class="info-label">Formation</span>
-            <span class="info-value" id="currentFormation">4-2-3-1</span>
+      <!-- Bench Section (moved to sidebar) -->
+      <div class="info-panel" style="width: 360px; max-width: 360px; min-width: 360px;">
+        <div class="bench-header">
+          <div class="bench-title">🪑 BENCH & AVAILABLE PLAYERS</div>
+          <div class="position-filter">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="Goalkeeper">GK</button>
+            <button class="filter-btn" data-filter="Defender">DEF</button>
+            <button class="filter-btn" data-filter="Midfielder">MID</button>
+            <button class="filter-btn" data-filter="Forward">FWD</button>
           </div>
-          <div class="info-row">
-            <span class="info-label">Players on Pitch</span>
-            <span class="info-value"><span id="pitchCount">0</span> / 11</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label goalkeeper-badge">⬤ Goalkeeper</span>
-            <span class="info-value" id="gkCount">0</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label defender-badge">⬤ Defenders</span>
-            <span class="info-value" id="defCount">0</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label midfielder-badge">⬤ Midfielders</span>
-            <span class="info-value" id="midCount">0</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label forward-badge">⬤ Forwards</span>
-            <span class="info-value" id="fwdCount">0</span>
-          </div>
+        </div>
+        <div class="bench-grid" id="benchGrid" style="max-height: 700px; min-height: 400px;">
+          <!-- Players will be dynamically generated -->
         </div>
       </div>
     </div>
 
-    <!-- Bench Section -->
-    <div class="bench-container">
-      <div class="bench-header">
-        <div class="bench-title">🪑 BENCH & AVAILABLE PLAYERS</div>
-        <div class="position-filter">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="Goalkeeper">GK</button>
-          <button class="filter-btn" data-filter="Defender">DEF</button>
-          <button class="filter-btn" data-filter="Midfielder">MID</button>
-          <button class="filter-btn" data-filter="Forward">FWD</button>
+    <!-- Squad Overview (moved to bottom) -->
+    <div class="bench-container" style="margin-top: 20px;">
+      <div class="info-header" style="font-size: 18px; font-weight: 600; color: #00b2a9; margin-bottom: 15px;">Squad Overview</div>
+      <div class="formation-info" style="background: #1a1a2e; border-radius: 15px; padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div class="info-row" style="border: none;">
+          <span class="info-label">Formation</span>
+          <span class="info-value" id="currentFormation">4-2-3-1</span>
         </div>
-      </div>
-      <div class="bench-grid" id="benchGrid">
-        <!-- Players will be dynamically generated -->
+        <div class="info-row" style="border: none;">
+          <span class="info-label">Players on Pitch</span>
+          <span class="info-value"><span id="pitchCount">0</span> / 11</span>
+        </div>
+        <div class="info-row" style="border: none;">
+          <span class="info-label goalkeeper-badge">⬤ Goalkeeper</span>
+          <span class="info-value" id="gkCount">0</span>
+        </div>
+        <div class="info-row" style="border: none;">
+          <span class="info-label defender-badge">⬤ Defenders</span>
+          <span class="info-value" id="defCount">0</span>
+        </div>
+        <div class="info-row" style="border: none;">
+          <span class="info-label midfielder-badge">⬤ Midfielders</span>
+          <span class="info-value" id="midCount">0</span>
+        </div>
+        <div class="info-row" style="border: none;">
+          <span class="info-label forward-badge">⬤ Forwards</span>
+          <span class="info-value" id="fwdCount">0</span>
+        </div>
       </div>
     </div>
   </div>
@@ -727,22 +737,22 @@
     // Formation configurations - Changed to use OUTFIELD for non-GK positions
     const formations = {
       '4-2-3-1': {
-        GK: [{ x: 50, y: 95 }],
+        GK: [{ x: 50, y: 90 }], // Moved up from 95 to 90 to give space for name
         OUTFIELD: [
           // Defenders
-          { x: 20, y: 75 },
-          { x: 40, y: 75 },
-          { x: 60, y: 75 },
-          { x: 80, y: 75 },
+          { x: 20, y: 72 },
+          { x: 40, y: 72 },
+          { x: 60, y: 72 },
+          { x: 80, y: 72 },
           // Defensive Midfielders
-          { x: 35, y: 60 },
-          { x: 65, y: 60 },
+          { x: 35, y: 57 },
+          { x: 65, y: 57 },
           // Attacking Midfielders
-          { x: 25, y: 40 },
-          { x: 50, y: 35 },
-          { x: 75, y: 40 },
+          { x: 25, y: 38 },
+          { x: 50, y: 33 },
+          { x: 75, y: 38 },
           // Forward
-          { x: 50, y: 15 }
+          { x: 50, y: 13 }
         ]
       }
     };
