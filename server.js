@@ -166,6 +166,11 @@ app.post('/update', isLoggedIn, (req, res) => {
   handle_Update(req, res);
 });
 
+// DELETE - Handle player deletion
+app.post('/delete', isLoggedIn, (req, res) => {
+  handle_Delete(req, res);
+});
+
 // ============================================================================
 // REST API ROUTES (Public)
 // ============================================================================
@@ -481,6 +486,28 @@ async function handle_Update(req, res) {
   } catch (err) {
     console.error('handle_Update error:', err);
     res.render('info', { message: 'Error updating player' });
+  }
+}
+
+async function handle_Delete(req, res) {
+  try {
+    const { _id } = req.query;
+    
+    if (!_id || !ObjectId.isValid(_id)) {
+      return res.render('info', { message: 'Invalid player ID' });
+    }
+    
+    const result = await db.collection(COLLECTION_PLAYERS)
+      .deleteOne({ _id: new ObjectId(_id) });
+    
+    if (result.deletedCount === 0) {
+      return res.render('info', { message: 'Player not found' });
+    }
+    
+    res.redirect('/players');
+  } catch (err) {
+    console.error('handle_Delete error:', err);
+    res.render('info', { message: 'Error deleting player' });
   }
 }
 
