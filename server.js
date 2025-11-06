@@ -60,6 +60,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// JSON parsing middleware for API routes
+app.use('/api', express.json());
+
 // Form parsing middleware
 app.use(formidable());
 
