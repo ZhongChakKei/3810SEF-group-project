@@ -170,6 +170,91 @@
     .formation-btn:hover {
       border-color: #00b2a9;
     }
+    .save-lineup-btn {
+      background: #c8102e;
+      border: none;
+      color: white;
+      padding: 10px 25px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .save-lineup-btn.enabled {
+      opacity: 1;
+      cursor: pointer;
+    }
+    .save-lineup-btn.enabled:hover {
+      background: #a00d24;
+      transform: translateY(-2px);
+    }
+    .history-dropdown {
+      position: relative;
+    }
+    .history-btn {
+      background: #252535;
+      border: 2px solid #333345;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .history-btn:hover {
+      border-color: #00b2a9;
+    }
+    .history-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 10px;
+      background: #252535;
+      border: 2px solid #333345;
+      border-radius: 10px;
+      min-width: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    }
+    .history-menu.show {
+      display: block;
+    }
+    .history-item {
+      padding: 15px;
+      border-bottom: 1px solid #333345;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .history-item:hover {
+      background: #1a1a2e;
+    }
+    .history-item:last-child {
+      border-bottom: none;
+    }
+    .history-item-title {
+      font-weight: 600;
+      color: white;
+      margin-bottom: 5px;
+    }
+    .history-item-date {
+      font-size: 12px;
+      color: #888;
+    }
+    .history-empty {
+      padding: 20px;
+      text-align: center;
+      color: #888;
+    }
 
     /* Main Content Layout */
     .main-content {
@@ -642,6 +727,17 @@
         <span style="color: #888; font-size: 14px;">Formation:</span>
         <button class="formation-btn active" data-formation="4-2-3-1">4-2-3-1</button>
       </div>
+      <div class="history-dropdown">
+        <button class="history-btn" id="historyBtn">
+          <span>📋</span> HISTORY
+        </button>
+        <div class="history-menu" id="historyMenu">
+          <!-- History items will be loaded here -->
+        </div>
+      </div>
+      <button class="save-lineup-btn" id="saveLineupBtn">
+        <span>💾</span> SAVE LINEUP
+      </button>
     </div>
 
     <!-- Main Content -->
@@ -992,7 +1088,172 @@
       document.getElementById('defCount').textContent = counts.DEF;
       document.getElementById('midCount').textContent = counts.MID;
       document.getElementById('fwdCount').textContent = counts.FWD;
+      
+      // Update save button state
+      updateSaveButtonState();
     }
+
+    // Update save button state
+    function updateSaveButtonState() {
+      const pitchCount = Object.keys(pitchPlayers).length;
+      const saveBtn = document.getElementById('saveLineupBtn');
+      
+      if (pitchCount === 11) {
+        saveBtn.classList.add('enabled');
+        saveBtn.disabled = false;
+      } else {
+        saveBtn.classList.remove('enabled');
+        saveBtn.disabled = true;
+      }
+    }
+
+    // Save lineup
+    async function saveLineup() {
+      const pitchCount = Object.keys(pitchPlayers).length;
+      
+      if (pitchCount !== 11) {
+        alert('Please fill all 11 positions before saving!');
+        return;
+      }
+
+      const title = prompt('Give your lineup a name (optional):');
+      if (title === null) return; // User cancelled
+
+      const positions = [];
+      for (let i = 0; i < 11; i++) {
+        const player = pitchPlayers[i];
+        if (player) {
+          positions.push({
+            positionIndex: i,
+            playerId: player._id,
+            playerName: player.name,
+            playerNumber: player.squadNumber,
+            playerPosition: player.position
+          });
+        }
+      }
+
+      try {
+        const response = await fetch('/api/lineups', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            formation: currentFormation,
+            positions: positions,
+            title: title || `Lineup ${new Date().toLocaleDateString()}`
+          })
+        });
+
+        if (response.ok) {
+          alert('Lineup saved successfully!');
+          loadHistory(); // Refresh history
+        } else {
+          const error = await response.json();
+          alert('Failed to save lineup: ' + (error.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Save lineup error:', err);
+        alert('Failed to save lineup. Please try again.');
+      }
+    }
+
+    // Load history
+    async function loadHistory() {
+      try {
+        const response = await fetch('/api/lineups');
+        if (response.ok) {
+          const lineups = await response.json();
+          renderHistory(lineups);
+        }
+      } catch (err) {
+        console.error('Load history error:', err);
+      }
+    }
+
+    // Render history
+    function renderHistory(lineups) {
+      const historyMenu = document.getElementById('historyMenu');
+      
+      if (lineups.length === 0) {
+        historyMenu.innerHTML = '<div class="history-empty">No saved lineups yet</div>';
+        return;
+      }
+
+      historyMenu.innerHTML = lineups.map(lineup => `
+        <div class="history-item" onclick="loadLineup('${lineup._id}')">
+          <div class="history-item-title">${lineup.title}</div>
+          <div class="history-item-date">
+            ${new Date(lineup.createdAt).toLocaleString()} - ${lineup.formation}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Load a specific lineup
+    async function loadLineup(lineupId) {
+      try {
+        const response = await fetch(`/api/lineups/${lineupId}`);
+        if (response.ok) {
+          const lineup = await response.json();
+          
+          // Clear current pitch
+          Object.values(pitchPlayers).forEach(player => {
+            if (!benchPlayers.find(p => p._id === player._id)) {
+              benchPlayers.push(player);
+            }
+          });
+          pitchPlayers = {};
+
+          // Load lineup positions
+          lineup.positions.forEach(pos => {
+            const player = allPlayers.find(p => p._id === pos.playerId);
+            if (player) {
+              pitchPlayers[pos.positionIndex] = player;
+              benchPlayers = benchPlayers.filter(p => p._id !== player._id);
+            }
+          });
+
+          // Update formation if different
+          if (lineup.formation !== currentFormation) {
+            currentFormation = lineup.formation;
+            document.getElementById('currentFormation').textContent = currentFormation;
+            document.querySelectorAll('.formation-btn').forEach(btn => {
+              btn.classList.toggle('active', btn.dataset.formation === currentFormation);
+            });
+          }
+
+          renderPitch();
+          renderBench();
+          updateStats();
+          
+          // Close history menu
+          document.getElementById('historyMenu').classList.remove('show');
+        }
+      } catch (err) {
+        console.error('Load lineup error:', err);
+        alert('Failed to load lineup. Please try again.');
+      }
+    }
+
+    // Toggle history menu
+    function toggleHistoryMenu() {
+      const menu = document.getElementById('historyMenu');
+      menu.classList.toggle('show');
+      if (menu.classList.contains('show')) {
+        loadHistory();
+      }
+    }
+
+    // Close history menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const historyDropdown = document.querySelector('.history-dropdown');
+      const historyMenu = document.getElementById('historyMenu');
+      if (!historyDropdown.contains(e.target) && historyMenu.classList.contains('show')) {
+        historyMenu.classList.remove('show');
+      }
+    })
 
     // Event listeners
     function attachEventListeners() {
@@ -1027,6 +1288,15 @@
       // Search
       document.getElementById('searchInput').addEventListener('input', () => {
         renderBench();
+      });
+
+      // Save lineup button
+      document.getElementById('saveLineupBtn').addEventListener('click', saveLineup);
+
+      // History button
+      document.getElementById('historyBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleHistoryMenu();
       });
     }
 

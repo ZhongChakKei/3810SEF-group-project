@@ -22,6 +22,7 @@ app.use(express.static('public'));
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = process.env.DB_NAME || 'project_sample';
 const COLLECTION_PLAYERS = 'players';
+const COLLECTION_LINEUPS = 'lineups';
 
 let db;
 
@@ -333,6 +334,111 @@ app.delete('/api/players/:id', async (req, res) => {
     res.json({ message: 'Player deleted successfully' });
   } catch (err) {
     console.error('API DELETE /players/:id error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============================================================================
+// LINEUP API ROUTES (Protected)
+// ============================================================================
+
+// GET all lineups for current user
+app.get('/api/lineups', isLoggedIn, async (req, res) => {
+  try {
+    const lineups = await db.collection(COLLECTION_LINEUPS)
+      .find({ userEmail: req.user.email })
+      .sort({ createdAt: -1 })
+      .toArray();
+    
+    res.json(lineups);
+  } catch (err) {
+    console.error('API GET /lineups error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET one lineup by ID
+app.get('/api/lineups/:id', isLoggedIn, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid lineup ID' });
+    }
+    
+    const lineup = await db.collection(COLLECTION_LINEUPS)
+      .findOne({ 
+        _id: new ObjectId(id),
+        userEmail: req.user.email // Only allow users to access their own lineups
+      });
+    
+    if (!lineup) {
+      return res.status(404).json({ error: 'Lineup not found' });
+    }
+    
+    res.json(lineup);
+  } catch (err) {
+    console.error('API GET /lineups/:id error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST - Create new lineup
+app.post('/api/lineups', isLoggedIn, async (req, res) => {
+  try {
+    const { formation, positions, title } = req.body;
+    
+    // Validation
+    if (!formation || !positions || !Array.isArray(positions)) {
+      return res.status(400).json({ error: 'Formation and positions are required' });
+    }
+    
+    if (positions.length !== 11) {
+      return res.status(400).json({ error: 'Lineup must have exactly 11 players' });
+    }
+    
+    const lineup = {
+      userId: req.user._id,
+      userEmail: req.user.email,
+      userName: req.user.displayName || req.user.email,
+      formation,
+      positions,
+      title: title || `Lineup ${new Date().toLocaleDateString()}`,
+      createdAt: new Date()
+    };
+    
+    const result = await db.collection(COLLECTION_LINEUPS).insertOne(lineup);
+    lineup._id = result.insertedId;
+    
+    res.status(201).json(lineup);
+  } catch (err) {
+    console.error('API POST /lineups error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE - Remove lineup
+app.delete('/api/lineups/:id', isLoggedIn, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid lineup ID' });
+    }
+    
+    const result = await db.collection(COLLECTION_LINEUPS)
+      .deleteOne({ 
+        _id: new ObjectId(id),
+        userEmail: req.user.email // Only allow users to delete their own lineups
+      });
+    
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Lineup not found' });
+    }
+    
+    res.json({ message: 'Lineup deleted successfully' });
+  } catch (err) {
+    console.error('API DELETE /lineups/:id error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
