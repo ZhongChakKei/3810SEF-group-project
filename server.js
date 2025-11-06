@@ -35,8 +35,9 @@ MongoClient.connect(MONGODB_URI)
     setupPassport(db);
     
     // Start server after DB connection
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on http://0.0.0.0:${PORT}`);
+      console.log(`Access via: http://44.220.156.75:${PORT}`);
     });
   })
   .catch(err => {
