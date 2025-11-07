@@ -897,7 +897,7 @@
           const player = pitchPlayers[positionIndex];
           if (player) {
             slot.classList.add('occupied');
-            const photoPath = player.squadNumber ? `/players/${player.squadNumber}.png` : null;
+            const photoPath = player.squadNumber ? `/players_image/${player.squadNumber}.png` : null;
             slot.innerHTML = `
               <div class="player-shirt" draggable="true">
                 ${photoPath ? `
@@ -954,7 +954,7 @@
         card.className = 'bench-player';
         card.draggable = true;
         
-        const photoPath = player.squadNumber ? `/players/${player.squadNumber}.png` : null;
+        const photoPath = player.squadNumber ? `/players_image/${player.squadNumber}.png` : null;
         
         card.innerHTML = `
           <div class="player-card">

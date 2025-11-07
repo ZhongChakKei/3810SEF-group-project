@@ -356,7 +356,7 @@
     <div class="player-header">
       <% if (player.squadNumber) { %>
         <div class="player-photo-container">
-          <img src="/players/<%= player.squadNumber %>.png" alt="<%= player.name %>" class="player-photo-large" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <img src="/players_image/<%= player.squadNumber %>.png" alt="<%= player.name %>" class="player-photo-large" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <div class="no-photo-large" style="display: none;">⚽</div>
         </div>
       <% } %>

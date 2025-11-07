@@ -412,7 +412,7 @@
       emptyState.style.display = 'none';
       
       grid.innerHTML = filteredPlayers.map(player => {
-        const photoPath = player.squadNumber ? `/players/${player.squadNumber}.png` : null;
+        const photoPath = player.squadNumber ? `/players_image/${player.squadNumber}.png` : null;
         
         return `
           <div class="player-card" onclick="window.location.href='/details?_id=${player._id}'">
