@@ -348,14 +348,25 @@ app.delete('/api/players/:id', async (req, res) => {
 });
 
 // ============================================================================
-// LINEUP API ROUTES (Protected)
+// LINEUP/SQUAD API ROUTES (Public - No Authentication)
 // ============================================================================
 
-// GET all lineups for current user
-app.get('/api/lineups', isLoggedIn, async (req, res) => {
+// GET all lineups (no auth required)
+app.get('/api/lineups', async (req, res) => {
   try {
+    const { title, formation } = req.query;
+    const query = {};
+    
+    if (title) {
+      query.title = { $regex: title, $options: 'i' };
+    }
+    
+    if (formation) {
+      query.formation = formation;
+    }
+    
     const lineups = await db.collection(COLLECTION_LINEUPS)
-      .find({ userEmail: req.user.email })
+      .find(query)
       .sort({ createdAt: -1 })
       .toArray();
     
@@ -366,8 +377,8 @@ app.get('/api/lineups', isLoggedIn, async (req, res) => {
   }
 });
 
-// GET one lineup by ID
-app.get('/api/lineups/:id', isLoggedIn, async (req, res) => {
+// GET one lineup by ID (no auth required)
+app.get('/api/lineups/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -376,10 +387,7 @@ app.get('/api/lineups/:id', isLoggedIn, async (req, res) => {
     }
     
     const lineup = await db.collection(COLLECTION_LINEUPS)
-      .findOne({ 
-        _id: new ObjectId(id),
-        userEmail: req.user.email // Only allow users to access their own lineups
-      });
+      .findOne({ _id: new ObjectId(id) });
     
     if (!lineup) {
       return res.status(404).json({ error: 'Lineup not found' });
@@ -392,10 +400,10 @@ app.get('/api/lineups/:id', isLoggedIn, async (req, res) => {
   }
 });
 
-// POST - Create new lineup
-app.post('/api/lineups', isLoggedIn, async (req, res) => {
+// POST - Create new lineup (no auth required)
+app.post('/api/lineups', async (req, res) => {
   try {
-    const { formation, positions, title } = req.body;
+    const { formation, positions, title, userName } = req.body;
     
     // Validation
     if (!formation || !positions || !Array.isArray(positions)) {
@@ -408,20 +416,8 @@ app.post('/api/lineups', isLoggedIn, async (req, res) => {
     
     const lineupTitle = title || `Lineup ${new Date().toLocaleDateString()}`;
     
-    // Check for duplicate title for this user
-    const existingLineup = await db.collection(COLLECTION_LINEUPS).findOne({
-      userEmail: req.user.email,
-      title: lineupTitle
-    });
-    
-    if (existingLineup) {
-      return res.status(400).json({ error: 'A lineup with this title already exists. Please choose a different name.' });
-    }
-    
     const lineup = {
-      userId: req.user._id,
-      userEmail: req.user.email,
-      userName: req.user.displayName || req.user.email,
+      userName: userName || 'Anonymous',
       formation,
       positions,
       title: lineupTitle,
@@ -438,8 +434,57 @@ app.post('/api/lineups', isLoggedIn, async (req, res) => {
   }
 });
 
-// DELETE - Remove lineup
-app.delete('/api/lineups/:id', isLoggedIn, async (req, res) => {
+// PUT - Update lineup (no auth required)
+app.put('/api/lineups/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid lineup ID' });
+    }
+    
+    const { formation, positions, title, userName } = req.body;
+    
+    const update = {
+      $set: {
+        updatedAt: new Date()
+      }
+    };
+    
+    if (formation !== undefined) update.$set.formation = formation;
+    if (title !== undefined) update.$set.title = title;
+    if (userName !== undefined) update.$set.userName = userName;
+    
+    if (positions !== undefined) {
+      if (!Array.isArray(positions)) {
+        return res.status(400).json({ error: 'Positions must be an array' });
+      }
+      if (positions.length !== 11) {
+        return res.status(400).json({ error: 'Lineup must have exactly 11 players' });
+      }
+      update.$set.positions = positions;
+    }
+    
+    const result = await db.collection(COLLECTION_LINEUPS)
+      .findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        update,
+        { returnDocument: 'after' }
+      );
+    
+    if (!result) {
+      return res.status(404).json({ error: 'Lineup not found' });
+    }
+    
+    res.json(result);
+  } catch (err) {
+    console.error('API PUT /lineups/:id error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE - Remove lineup (no auth required)
+app.delete('/api/lineups/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -448,10 +493,7 @@ app.delete('/api/lineups/:id', isLoggedIn, async (req, res) => {
     }
     
     const result = await db.collection(COLLECTION_LINEUPS)
-      .deleteOne({ 
-        _id: new ObjectId(id),
-        userEmail: req.user.email // Only allow users to delete their own lineups
-      });
+      .deleteOne({ _id: new ObjectId(id) });
     
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Lineup not found' });
