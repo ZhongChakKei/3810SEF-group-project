@@ -241,7 +241,7 @@ app.get('/api/players/:id', async (req, res) => {
 // POST - Create new player
 app.post('/api/players', async (req, res) => {
   try {
-    const { name, position, heightCm, dateOfBirth, nationality, squadNumber, stats, tags } = req.fields;
+    const { name, position, heightCm, dateOfBirth, nationality, squadNumber, stats, tags } = req.body;
     
     if (!name) {
       return res.status(400).json({ error: 'Player name is required' });
@@ -283,7 +283,7 @@ app.put('/api/players/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid player ID' });
     }
     
-    const { name, position, heightCm, dateOfBirth, nationality, squadNumber, stats, tags } = req.fields;
+    const { name, position, heightCm, dateOfBirth, nationality, squadNumber, stats, tags } = req.body;
     
     const update = {
       $set: {
